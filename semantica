@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galería de Carros & Blog</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding-top: 80px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Barra de navegación superior fija */
+    .barra-de-navegacion {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      padding: 1.2rem;
+      z-index: 1000;
+    }
+
+    .barra-de-navegacion a {
+      color: #f8fafc;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.05rem;
+      transition: color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .barra-de-navegacion a:hover,
+    .barra-de-navegacion a.nav-active {
+      color: #38bdf8;
+    }
+
+    /* Contenedor principal con soporte para publicidad lateral */
+    .layout-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem 2rem 1rem;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 2rem;
+      flex: 1;
+      width: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .layout-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Manejo de secciones visibles / ocultas */
+    .section {
+      display: none;
+    }
+
+    .section.active-section {
+      display: block;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: #38bdf8;
+    }
+
+    p {
+      color: #94a3b8;
+    }
+
+    /* Banner publicitario superior */
+    .ad-banner-top {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+      color: #0f172a;
+      text-align: center;
+      padding: 0.8rem 1.5rem;
+      font-weight: bold;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ad-banner-top button {
+      background-color: #0f172a;
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* Barra lateral de publicidad (Sidebar) */
+    .sidebar-ads {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .ad-box {
+      background-color: #1e293b;
+      border: 1px dashed #38bdf8;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .ad-box h4 {
+      color: #38bdf8;
+      margin-bottom: 0.5rem;
+    }
+
+    .ad-box p {
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .ad-box img {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 0.8rem;
+    }
+
+    /* Estilos del Banner de Inicio */
+    .hero-banner {
+      background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80') center/cover;
+      border-radius: 16px;
+      padding: 4rem 2rem;
+      text-align: center;
+      border: 1px solid #334155;
+      margin-top: 1rem;
+    }
+
+    .hero-banner h2 {
+      font-size: 2.2rem;
+      color: #38bdf8;
+      margin-bottom: 1rem;
+    }
+
+    .hero-banner p {
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto 1.5rem auto;
+      color: #e2e8f0;
+    }
+
+    /* Botones de Filtro en Catálogo */
+    .filter-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .btn {
+      background-color: #1e293b;
+      color: #f8fafc;
+      border: 2px solid #334155;
+      padding: 0.6rem 1.4rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #334155;
+      border-color: #38bdf8;
+    }
+
+    .btn.active {
+      background-color: #38bdf8;
+      color: #0f172a;
+      border-color: #38bdf8;
+    }
+
+    /* Cuadrícula de Galería */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background-color: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .card-info {
+      padding: 1.2rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .card-tag {
+      display: inline-block;
+      background-color: #0f172a;
+      color: #38bdf8;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    /* Estilos para el Artículo / Blog */
+    .article-container {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 2rem;
+      line-height: 1.7;
+    }
+
+    .article-container img {
+      width: 100%;
+      max-height: 350px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+    }
+
+    .article-container h2 {
+      color: #38bdf8;
+      margin: 1.5rem 0 0.8rem 0;
+    }
+
+    .article-container p {
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+    }
+
+    /* Estilos del Formulario de Contacto */
+    .contact-card {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #f8fafc;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-size: 1rem;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #38bdf8;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background-color: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background-color: #0284c7;
+      color: #ffffff;
+    }
+
+    /* Estilos del Pie de Página (Footer) */
+    footer {
+      background-color: #1e293b;
+      border-top: 1px solid #334155;
+      padding: 2.5rem 1rem 1.5rem 1rem;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-col h3, .footer-col h4 {
+      color: #38bdf8;
+      margin-bottom: 1rem;
+    }
+
+    .footer-col p {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .footer-col ul {
+      list-style: none;
+    }
+
+    .footer-col ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-col ul li a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .footer-col ul li a:hover {
+      color: #38bdf8;
+    }
+
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid #334155;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .hide {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de navegación que conmuta las secciones -->
+  <nav class="barra-de-navegacion">
+    <a class="nav-link nav-active" onclick="showSection('inicio', this)">Inicio</a>
+    <a class="nav-link" onclick="showSection('catalogo', this)">Catálogo</a>
+    <a class="nav-link" onclick="showSection('articulos', this)">Artículos</a>
+    <a class="nav-link" onclick="showSection('contacto', this)">Contacto</a>
+  </nav>
+
+  <div class="layout-container">
+    <!-- Contenido Principal -->
+    <main>
+      <!-- PUBLICIDAD SUPERIOR -->
+      <div class="ad-banner-top">
+        <span>🚀 <strong>¡OFERTA ESPECIAL!</strong> Seguros de auto con 30% de descuento este mes.</span>
+        <button onclick="alert('Redirigiendo a la oferta de seguro...')">Saber Más</button>
+      </div>
+
+      <!-- APARTADO 1: INICIO -->
+      <section id="inicio" class="section active-section">
+        <header>
+          <h1>Bienvenido a la Galería</h1>
+          <p>Explora nuestra colección exclusiva de vehículos deportivos, SUVs y clásicos.</p>
+        </header>
+
+        <div class="hero-banner">
+          <h2>Encuentra tu Auto Ideal</h2>
+          <p>Navega por nuestro catálogo para descubrir modelos icónicos y especificaciones detalladas.</p>
+          <button class="btn active" onclick="showSection('catalogo', document.querySelectorAll('.nav-link')[1])">Ver Catálogo</button>
+        </div>
+      </section>
+
+      <!-- APARTADO 2: CATÁLOGO DE CARROS -->
+      <section id="catalogo" class="section">
+        <header>
+          <h1>Catálogo de Carros</h1>
+          <p>Haz clic en los botones para filtrar los vehículos por categoría</p>
+        </header>
+
+        <div class="filter-buttons">
+          <button class="btn active" onclick="filterCars('todos')">Todos</button>
+          <button class="btn" onclick="filterCars('deportivo')">Deportivos</button>
+          <button class="btn" onclick="filterCars('suv')">SUVs</button>
+          <button class="btn" onclick="filterCars('clasico')">Clásicos</button>
+        </div>
+
+        <div class="gallery">
+          <div class="card deportivo">
+            <img src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80" alt="Porsche Rojo">
+            <div class="card-info">
+              <div class="card-title">Porsche 911</div>
+              <span class="card-tag">Deportivo</span>
+            </div>
+          </div>
+
+          <div class="card suv">
+            <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80" alt="Jeep 4x4">
+            <div class="card-info">
+              <div class="card-title">Jeep Wrangler</div>
+              <span class="card-tag">SUV</span>
+            </div>
+          </div>
+
+          <div class="card clasico">
+            <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=600&q=80" alt="Chevrolet Corvette Clásico">
+            <div class="card-info">
+              <div class="card-title">Corvette 1963</div>
+              <span class="card-tag">Clásicos</span>
+            </div>
+          </div>
+
+          <div class="card deportivo">
+            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=80" alt="Porsche Negro">
+            <div class="card-info">
+              <div class="card-title">Porsche GT3</div>
+              <span class="card-tag">Deportivo</span>
+            </div>
+          </div>
+
+          <div class="card suv">
+            <img src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=600&q=80" alt="Range Rover">
+            <div class="card-info">
+              <div class="card-title">Range Rover Velar</div>
+              <span class="card-tag">SUV</span>
+            </div>
+          </div>
+
+          <div class="card clasico">
+            <img src="https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=600&q=80" alt="Ferrari Rojo Clásico">
+            <div class="card-info">
+              <div class="card-title">Ferrari 250 GTO</div>
+              <span class="card-tag">Clásicos</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- APARTADO 3: ARTÍCULOS Y BLOG -->
+      <section id="articulos" class="section">
+        <header>
+          <h1>Blog Automotriz</h1>
+          <p>Consejos, noticias y guías sobre el cuidado de tu vehículo</p>
+        </header>
+
+        <article class="article-container">
+          <h1>Guía de Mantenimiento Preventivo: Cómo Extender la Vida Útil de tu Auto</h1>
+          <p><em>Publicado el 28 de Septiembre, 2026 — Por el Equipo Editorial</em></p>
+          
+          <img src="https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=800&q=80" alt="Mecanico revisando motor">
+
+          <p>Mantener un vehículo en óptimas condiciones no solo garantiza tu seguridad en la carretera, sino que también preserva el valor de reventa del automóvil a largo plazo. A continuación, repasamos los puntos clave de revisión que todo conductor debe conocer.</p>
+
+          <h2>1. Cambio Regular de Aceite y Filtros</h2>
+          <p>El aceite es el fluido vital del motor. Reduce la fricción entre las piezas móviles y ayuda a disipar el calor. Es recomendable cambiar el aceite según las especificaciones del fabricante, generalmente cada 5,000 a 10,000 kilómetros.</p>
+
+          <h2>2. Inspección del Sistema de Frenos</h2>
+          <p>Las balatas y discos de freno sufren un desgaste natural. Escuchar chirridos o sentir vibraciones al frenar son señales claras de que debes llevar tu vehículo a un taller especializado de inmediato.</p>
+
+          <h2>3. Cuidado y Presión de las Llantas</h2>
+          <p>Circular con la presión correcta de los neumáticos mejora el consumo de combustible y reduce el riesgo de pinchazos. No olvides rotar las llantas cada 10,000 km para asegurar un desgaste uniforme.</p>
+        </article>
+      </section>
+
+      <!-- APARTADO 4: CONTACTO -->
+      <section id="contacto" class="section">
+        <header>
+          <h1>Contáctanos</h1>
+          <p>¿Tienes dudas sobre algún vehículo? Envíanos un mensaje.</p>
+        </header>
+
+        <div class="contact-card">
+          <form onsubmit="event.preventDefault(); alert('¡Mensaje enviado con éxito!');">
+            <div class="form-group">
+              <label for="nombre">Nombre Completo</label>
+              <input type="text" id="nombre" placeholder="Tu nombre" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Correo Electrónico</label>
+              <input type="email" id="email" placeholder="correo@ejemplo.com" required>
+            </div>
+            <div class="form-group">
+              <label for="mensaje">Mensaje</label>
+              <textarea id="mensaje" rows="4" placeholder="Escribe tu consulta..." required></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Enviar Mensaje</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <!-- Barra Lateral para Anuncios (Sidebar Ads) -->
+    <aside class="sidebar-ads">
+      <div class="ad-box">
+        <h4>LlantaPro 2x1</h4>
+        <img src="https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=300&q=80" alt="Llantas en promoción">
+        <p>Aprovecha la promoción en llantas deportivas de alta durabilidad.</p>
+        <button class="btn" style="width: 100%;" onclick="alert('Redirigiendo a Tienda de Llantas...')">Comprar Ahora</button>
+      </div>
+
+      <div class="ad-box">
+        <h4>Financiamiento Express</h4>
+        <p>¿Buscas estrenar auto? Consigue tu crédito aprobado en menos de 24 horas.</p>
+        <button class="btn" style="width: 100%;" onclick="alert('Redirigiendo a Financiera...')">Simular Crédito</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- PIE DE PÁGINA (FOOTER) -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-col">
+        <h3>Galería de Carros</h3>
+        <p>Tu portal de confianza para explorar vehículos deportivos, de lujo y clásicos con las mejores especificaciones.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navegación</h4>
+        <ul>
+          <li><a onclick="showSection('inicio')">Inicio</a></li>
+          <li><a onclick="showSection('catalogo')">Catálogo</a></li>
+          <li><a onclick="showSection('articulos')">Artículos</a></li>
+          <li><a onclick="showSection('contacto')">Contacto</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Enlaces Legales</h4>
+        <ul>
+          <li><a href="#">Términos y Condiciones</a></li>
+          <li><a href="#">Política de Privacidad</a></li>
+          <li><a href="#">Política de Cookies</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contacto</h4>
+        <p>Email: info@galeriadecarros.com</p>
+        <p>Teléfono: +1 (555) 019-2834</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Galería de Carros. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Función para cambiar de apartado (Inicio / Catálogo / Artículos / Contacto)
+    function showSection(sectionId, clickedElement) {
+      // Ocultar todas las secciones
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(sec => sec.classList.remove('active-section'));
+
+      // Mostrar la sección seleccionada
+      document.getElementById(sectionId).classList.add('active-section');
+
+      // Actualizar estilo visual del enlace seleccionado en el menú
+      const navLinks = document.querySelectorAll('.nav-link');
+      navLinks.forEach(link => link.classList.remove('nav-active'));
+      
+      if (clickedElement) {
+        clickedElement.classList.add('nav-active');
+      } else {
+        // Asignar nav-active cuando se hace clic desde el pie de página
+        if (sectionId === 'inicio') navLinks[0].classList.add('nav-active');
+        if (sectionId === 'catalogo') navLinks[1].classList.add('nav-active');
+        if (sectionId === 'articulos') navLinks[2].classList.add('nav-active');
+        if (sectionId === 'contacto') navLinks[3].classList.add('nav-active');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Función para filtrar los autos en la sección Catálogo
+    function filterCars(category) {
+      const cards = document.querySelectorAll('.card');
+      const buttons = document.querySelectorAll('.filter-buttons .btn');
+
+      buttons.forEach(button => {
+        button.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      cards.forEach(card => {
+        if (category === 'todos') {
+          card.classList.remove('hide');
+        } else {
+          if (card.classList.contains(category)) {
+            card.classList.remove('hide');
+          } else {
+            card.classList.add('hide');
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
